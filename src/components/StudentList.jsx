@@ -4,8 +4,7 @@ import { Table, Button, Spinner, Alert, Modal, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 const StudentList = () => {
-  const { students, removeStudent, editStudent, loading, error } =
-    useStudents();
+  const { students, removeStudent, editStudent, loading, error } = useStudents();
   const [show, setShow] = useState(false); // Trạng thái mở/đóng modal
   const [selectedStudent, setSelectedStudent] = useState(null); // Lưu thông tin sinh viên cần chỉnh sửa
   const [studentArray, setStudentArray] = useState([]); // State cho danh sách sinh viên
@@ -92,15 +91,15 @@ const StudentList = () => {
       )}
 
       <Table striped bordered hover>
-        <thead>
+        <thead  className="text-center align-middle">
           <tr>
-            <th>#</th>
+            <th>STT</th>
             <th>Student Id</th>
             <th>Student Code</th>
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="text-center align-middle" >
           {studentArray.map((student, index) => (
             <tr key={student._id || index}>
               <td>{index + 1}</td>
