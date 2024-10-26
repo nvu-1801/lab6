@@ -6,17 +6,14 @@ import { Button, Row, Col } from "react-bootstrap";
 
 const HomePage = () => (
   <div>
-    <Row className="my-5 mx-5">
+    <Row className="mt-5 mx-5">
       <Col>
-        <h1>Student Management</h1>
+        <h1 style={{ color: "#28a745" }}>Student Management</h1>
       </Col>
       <Col>
-        <Link to="/add-student">
-          <Button variant="primary">Add New Student</Button>
-        </Link>
       </Col>
     </Row>
-    <Row  className=" mx-5">
+    <Row  className=" mx-5 mb-5">
       <Col>
         <StudentList />
       </Col>

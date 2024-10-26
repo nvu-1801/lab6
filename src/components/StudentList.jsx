@@ -1,38 +1,34 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Table, Button, Spinner, Alert, Modal, Form, FormControl, Row, Col, Container } from "react-bootstrap";
 import { useStudents } from "../Context/StudentContext";
-import { Table, Button, Spinner, Alert, Modal, Form } from "react-bootstrap";
-import { Link } from "react-router-dom";
 
 const StudentList = () => {
-  const { students, removeStudent, editStudent, loading, error } = useStudents();
-  const [show, setShow] = useState(false); // Trạng thái mở/đóng modal
-  const [selectedStudent, setSelectedStudent] = useState(null); // Lưu thông tin sinh viên cần chỉnh sửa
-  const [studentArray, setStudentArray] = useState([]); // State cho danh sách sinh viên
-  const [showAlert, setShowAlert] = useState(false); // Trạng thái hiển thị alert
+  const { students, removeStudent, editStudent, addStudent, loading, error } = useStudents();
+  const [studentArray, setStudentArray] = useState([]);
+  const [show, setShow] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [showAlert, setShowAlert] = useState(false);
+  const [studentCode, setStudentCode] = useState("");
+  const [name, setName] = useState("");
+  const [isActive, setIsActive] = useState(true);
+  const navigate = useNavigate();
 
-  // Cập nhật state khi `students` thay đổi
+  // Update student array when the students prop changes
   useEffect(() => {
-    if (students && students.length > 0) {
-      const arrayData = students[0]?.data || []; // Lấy data từ object lồng nhau
-      setStudentArray(arrayData);
-    } else {
-      setStudentArray([]);
-    }
+    setStudentArray(students?.[0]?.data || []);
   }, [students]);
 
-  // Mở modal và thiết lập thông tin sinh viên
   const handleEditClick = (student) => {
     setSelectedStudent(student);
     setShow(true);
   };
 
-  // Đóng modal và alert
   const handleClose = () => {
     setShow(false);
     setSelectedStudent(null);
   };
 
-  // Lưu thay đổi và gọi API cập nhật
   const handleSave = async () => {
     if (selectedStudent) {
       try {
@@ -42,19 +38,14 @@ const StudentList = () => {
           isActive: selectedStudent.isActive,
         });
 
-        console.log("Update response:", response);
-
         if (response.success) {
           setShowAlert(true);
           setTimeout(() => setShowAlert(false), 3000);
         } else {
-          alert("Update failed on backend.");
+          alert("Update failed.");
         }
       } catch (error) {
-        console.error("Failed to update student:", error);
-        alert(
-          "Console.log & network thông báo thành công nhưng không thể thay đổi được data ."
-        );
+        console.error("Update error:", error);
       }
     }
     handleClose();
@@ -65,50 +56,85 @@ const StudentList = () => {
     setSelectedStudent((prev) => ({ ...prev, [name]: value }));
   };
 
-  if (loading) {
-    return <Spinner animation="border" variant="primary" />;
-  }
+  const handleAddStudent = async () => {
+    if (name && studentCode) {
+      await addStudent({ studentCode, name, isActive });
+      setName("");
+      setStudentCode("");
+      setIsActive(true);
+    }
+  };
 
-  if (error) {
-    return <Alert variant="danger">{error}</Alert>;
-  }
-
-  if (studentArray.length === 0) {
-    return <div>No students found.</div>;
-  }
+  if (loading) return <Spinner animation="border" variant="primary" />;
+  if (error) return <Alert variant="danger">{error}</Alert>;
+  if (studentArray.length === 0) return <div>No students found.</div>;
 
   return (
-    <>
-      {/* Hiển thị Alert khi cập nhật thành công */}
+    <Container className="mt-5">
+      <Row>
+        <Col>
+          <h2>Total Students: {studentArray.length}</h2>
+        </Col>
+      </Row>
+
       {showAlert && (
-        <Alert
-          variant="success"
-          dismissible
-          onClose={() => setShowAlert(false)}
-        >
+        <Alert variant="success" dismissible onClose={() => setShowAlert(false)}>
           Student updated successfully!
         </Alert>
       )}
 
-      <Table striped bordered hover>
-        <thead  className="text-center align-middle">
-          <tr>
+      <Row className="mt-3">
+        <Col md={6}>
+          <Form.Group>
+            <Form.Label>Student Name</Form.Label>
+            <FormControl
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter student name"
+            />
+          </Form.Group>
+          <Form.Group className="mt-3">
+            <Form.Label>Student Code</Form.Label>
+            <FormControl
+              value={studentCode}
+              onChange={(e) => setStudentCode(e.target.value)}
+              placeholder="Enter student code"
+            />
+          </Form.Group>
+          <Form.Check
+            type="checkbox"
+            label="Active"
+            checked={isActive}
+            onChange={(e) => setIsActive(e.target.checked)}
+            className="mt-3"
+          />
+        </Col>
+        <Col md={6} className="d-flex align-items-end">
+          <Button variant="success" onClick={handleAddStudent}>
+            Add Student
+          </Button>
+        </Col>
+      </Row>
+
+      <Table striped bordered hover className="mt-5">
+        <thead>
+          <tr className="text-center align-middle">
             <th>STT</th>
-            <th>Student Id</th>
+            <th>Student ID</th>
             <th>Student Code</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody className="text-center align-middle" >
+        <tbody className="text-center align-middle">
           {studentArray.map((student, index) => (
             <tr key={student._id || index}>
               <td>{index + 1}</td>
               <td>
-                <Link to={`/student/${student._id || index}`}>
-                  {student._id}
-                </Link>
+                <Link to={`/student/${student._id}`}>{student._id}</Link>
               </td>
               <td>{student.studentCode}</td>
+              <td>{student.isActive ? "Active" : "Inactive"}</td>
               <td>
                 <Button
                   variant="warning"
@@ -119,7 +145,7 @@ const StudentList = () => {
                 </Button>
                 <Button
                   variant="danger"
-                  onClick={() => student._id && removeStudent(student._id)}
+                  onClick={() => removeStudent(student._id)}
                 >
                   Delete
                 </Button>
@@ -129,7 +155,6 @@ const StudentList = () => {
         </tbody>
       </Table>
 
-      {/* Modal để chỉnh sửa thông tin sinh viên */}
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Edit Student</Modal.Title>
@@ -146,7 +171,6 @@ const StudentList = () => {
                   onChange={handleChange}
                 />
               </Form.Group>
-
               <Form.Group className="mb-3">
                 <Form.Label>Student Code</Form.Label>
                 <Form.Control
@@ -156,7 +180,6 @@ const StudentList = () => {
                   onChange={handleChange}
                 />
               </Form.Group>
-
               <Form.Group className="mb-3">
                 <Form.Label>Is Active</Form.Label>
                 <Form.Select
@@ -185,7 +208,7 @@ const StudentList = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
+    </Container>
   );
 };
 
