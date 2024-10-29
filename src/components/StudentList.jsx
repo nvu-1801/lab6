@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Table, Button, Spinner, Alert, Modal, Form, FormControl, Row, Col, Container } from "react-bootstrap";
+import {
+  Table,
+  Button,
+  Spinner,
+  Alert,
+  Modal,
+  Form,
+  FormControl,
+  Row,
+  Col,
+  Container,
+} from "react-bootstrap";
 import { useStudents } from "../Context/StudentContext";
 
 const StudentList = () => {
-  const { students, removeStudent, editStudent, addStudent, loading, error } = useStudents();
+  const { students, removeStudent, editStudent, addStudent, loading, error } =
+    useStudents();
   const [studentArray, setStudentArray] = useState([]);
   const [show, setShow] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -78,7 +90,11 @@ const StudentList = () => {
       </Row>
 
       {showAlert && (
-        <Alert variant="success" dismissible onClose={() => setShowAlert(false)}>
+        <Alert
+          variant="success"
+          dismissible
+          onClose={() => setShowAlert(false)}
+        >
           Student updated successfully!
         </Alert>
       )}
@@ -120,38 +136,45 @@ const StudentList = () => {
         <thead>
           <tr className="text-center align-middle">
             <th>STT</th>
-            <th>Student ID</th>
+            <th>Student Name</th>
             <th>Student Code</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody className="text-center align-middle">
-          {studentArray.map((student, index) => (
-            <tr key={student._id || index}>
-              <td>{index + 1}</td>
-              <td>
-                <Link to={`/student/${student._id}`}>{student._id}</Link>
-              </td>
-              <td>{student.studentCode}</td>
-              <td>{student.isActive ? "Active" : "Inactive"}</td>
-              <td>
-                <Button
-                  variant="warning"
-                  className="me-2"
-                  onClick={() => handleEditClick(student)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() => removeStudent(student._id)}
-                >
-                  Delete
-                </Button>
-              </td>
-            </tr>
-          ))}
+          {studentArray.map(
+            (student, index) => (
+              console.log(studentArray),
+              (
+                <tr key={student._id || index}>
+                  <td>{index + 1}</td>
+                  <td>
+                    <Link to={`/student/${student.name}`} state={{ student }}>
+                      {student.name}
+                    </Link>
+                  </td>
+                  <td>{student.studentCode}</td>
+                  <td>{student.isActive ? "Active" : "Inactive"}</td>
+                  <td>
+                    <Button
+                      variant="warning"
+                      className="me-2"
+                      onClick={() => handleEditClick(student)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="danger"
+                      onClick={() => removeStudent(student._id)}
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              )
+            )
+          )}
         </tbody>
       </Table>
 
